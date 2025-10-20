@@ -93,12 +93,12 @@
        - Action: 50px
        - Giờ column small, Tiền expanded, Bắt đầu/Kết thúc share rest
     */
-    col.col-name { width: 80px; }
+    col.col-name { width: 60px; }
     col.col-action { width: 50px; }
-    col.col-start { width: 45px; }
-    col.col-end   { width: 45px; }
-    col.col-hours { width: 45px; }
-    col.col-amount{ width: 65px; }
+    col.col-start { width: 22%; }
+    col.col-end   { width: 22%; }
+    col.col-hours { width: 8%; }
+    col.col-amount{ width: 28%; }
 
     /* Buttons styling: smaller */
     .small-btn{padding:4px 6px;border-radius:6px;border:1px solid #e9eef6;background:transparent;color:var(--accent);font-size:12px;flex:0 0 auto}
@@ -116,6 +116,13 @@
     .booking-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
     .booking-meta{font-size:12px;color:var(--muted);margin-top:6px;white-space:normal}
     .card-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+
+    /* Specific: booking form stacking on small screens */
+    .booking-form .field { min-width:0; }
+    @media (max-width:360px){
+      .booking-form .field { flex: 1 1 100%; width:100%; }
+      .booking-form .buttons { display:flex; gap:8px; }
+    }
 
     /* Narrow adjustments */
     @media (max-width:360px){
@@ -163,23 +170,24 @@
 
         <h3 style="margin-top:6px;font-size:14px">Ghi booking (phiên câu)</h3>
 
-        <div class="grid">
-          <div>
+        <!-- booking form: use .booking-form and .field so we can stack inputs on small screens -->
+        <div class="booking-form grid" id="bookingForm">
+          <div class="field">
             <label class="small">Khách</label>
             <select id="bookingCustomer" aria-label="Chọn khách"></select>
           </div>
 
-          <div>
+          <div class="field">
             <label class="small">Bắt đầu (ngày+giờ)</label>
             <input type="datetime-local" id="bookingStart" />
           </div>
 
-          <div>
+          <div class="field">
             <label class="small">Kết thúc (ngày+giờ)</label>
             <input type="datetime-local" id="bookingEnd" />
           </div>
 
-          <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="field buttons" style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
             <button id="addBookingBtn">Ghi</button>
             <button id="cancelEditBookingBtn" class="btn-ghost" style="display:none">Huỷ</button>
           </div>
@@ -214,6 +222,7 @@
 /* Adjusted single-file app: show duration as hh:mm in "Giờ" column.
    - display: hh:mm (hours padded to 2 digits, minutes to 2 digits)
    - internal numeric hours (decimal) still used for calculations and CSV
+   - Booking form layout: stacked on small screens (booking-form .field)
 */
 
 const STORAGE_KEY = "hc_thunghieu_final_v1";
