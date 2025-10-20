@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Hồ câu Trung Hiếu — Quản lý doanh thu (360px)</title>
+  <meta name="theme-color" content="#0b5ed7">
+  <style>
+    :root{
+      --bg:#f7f9fc;
+      --card:#ffffff;
+      --accent:#0b5ed7;
+      --muted:#666;
+      --danger:#dc3545;
+      font-family: Inter, Roboto, system-ui, -apple-system, "Segoe UI", Arial;
+    }
+
+    /* --- Reset / Box sizing --- */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height:100%; width:100%; margin:0; padding:0; overflow-x:hidden; -webkit-text-size-adjust:100%; }
+
+    /* --- Page layout centered to a narrow app width (max 360px) --- */
+    body{
+      background:var(--bg);
+      color:#111;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;
+      justify-content:center;
+      padding:8px;
+      font-size:14px;
+    }
+    .app {
+      width:100%;
+      max-width:360px; /* target width */
+      min-width:280px;
+    }
+
+    /* --- Typography & spacing --- */
+    header{margin-bottom:8px}
+    h1{margin:0;font-size:18px}
+    .subtitle{margin:0;color:var(--muted);font-size:12px}
+
+    main{display:grid;grid-template-columns:1fr;gap:10px}
+    .card{background:var(--card);padding:10px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+    h2,h3{margin:0 0 8px 0;padding:0}
+
+    /* --- Forms & grid --- */
+    .grid{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start}
+    .grid > *{flex:1 1 120px; min-width:0} /* allow children to shrink on narrow screens */
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+
+    input, select, button, textarea {
+      padding:8px;
+      border-radius:6px;
+      border:1px solid #e3e6ea;
+      background:#fff;
+      font-size:14px;
+      line-height:1;
+      min-width:0; /* very important to allow flex shrink */
+      max-width:100%;
+    }
+    input[type="datetime-local"], input[type="date"], input[type="time"]{ min-width:0; }
+
+    button{background:var(--accent);color:#fff;border:none;cursor:pointer}
+    .btn-ghost{background:transparent;color:var(--accent);border:1px solid #e9eef6}
+    .btn-danger{background:var(--danger)}
+
+    .small{font-size:12px;color:var(--muted)}
+    .stat-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .stat{padding:8px;border-radius:6px;background:#f1f6ff;min-width:120px;flex:1 1 120px;font-size:13px}
+
+    .tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+    .tabs button{background:transparent;border:1px solid #e9eef6;padding:7px;border-radius:6px;cursor:pointer;font-size:13px}
+    .tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+    footer{margin-top:10px;color:var(--muted);font-size:12px;text-align:center}
+
+    /* --- Responsive table wrapper (scrollable) --- */
+    .table-wrapper { width:100%; overflow:auto; -webkit-overflow-scrolling:touch; }
+    table{width:100%;border-collapse:collapse;font-size:13px; table-layout:fixed;}
+    th, td { padding:6px; text-align:left; border-bottom:1px solid #f0f0f0; vertical-align:middle; }
+    th { font-weight:600; }
+
+    /* Use fixed layout + col widths, but allow wrapping inside cells */
+    td, th { overflow-wrap: anywhere; white-space:normal; word-break:break-word; }
+
+    /* Reduce padding/font in table to help fit */
+    .table-wrapper table th, .table-wrapper table td { padding:6px 6px; font-size:12px; }
+
+    /* Column widths:
+       - Khách: 60px
+       - Action: 50px
+       - Giờ column small, Tiền expanded, Bắt đầu/Kết thúc share rest
+    */
+    col.col-name { width: 80px; }
+    col.col-action { width: 50px; }
+    col.col-start { width: 45px; }
+    col.col-end   { width: 45px; }
+    col.col-hours { width: 42px; }
+    col.col-amount{ width: 65px; }
+
+    /* Buttons styling: smaller */
+    .small-btn{padding:4px 6px;border-radius:6px;border:1px solid #e9eef6;background:transparent;color:var(--accent);font-size:12px;flex:0 0 auto}
+    .btn-ghost{padding:4px 6px;font-size:12px}
+
+    /* Booking card (mobile) */
+    .booking-card{
+      border:1px solid #eef3fb;
+      padding:8px;
+      margin-bottom:8px;
+      border-radius:6px;
+      background:#fff;
+      word-break:break-word;
+    }
+    .booking-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .booking-meta{font-size:12px;color:var(--muted);margin-top:6px;white-space:normal}
+    .card-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+
+    /* Narrow adjustments */
+    @media (max-width:360px){
+      body{padding:6px}
+      h1{font-size:17px}
+      .card{padding:8px}
+      .stat{font-size:12px;padding:8px}
+      .grid{gap:6px}
+      input,select,button{font-size:13px;padding:7px}
+      .table-wrapper table th, .table-wrapper table td { padding:6px 6px; font-size:12px; }
+      .booking-meta{font-size:12px}
+      .small{font-size:11px}
+      .booking-row div:first-child { font-size:14px; }
+      /* prefer card layout on narrow screens */
+    }
+
+    /* Safety: ensure no element forces page-level horizontal scroll */
+    *[style] { max-width:100%; box-sizing:border-box; }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header>
+      <h1>Hồ câu Trung Hiếu</h1>
+      <p class="subtitle">Quản lý khách, phiên câu (hỗ trợ qua đêm) • Tối ưu cho màn ≤360px</p>
+    </header>
+
+    <main>
+      <section class="card" aria-labelledby="cfg-title">
+        <h2 id="cfg-title" style="font-size:15px">Cài đặt & Thêm dữ liệu</h2>
+
+        <div class="grid" style="margin-bottom:8px">
+          <div>
+            <label for="pricePerHour"><strong>Giá câu (VNĐ / giờ)</strong></label>
+            <input id="pricePerHour" type="number" min="0" step="1000" />
+          </div>
+
+          <div>
+            <label><strong>Thêm khách</strong></label>
+            <input id="customerName" placeholder="Tên khách" />
+            <input id="customerPhone" placeholder="SĐT (tùy chọn)" />
+            <button id="addCustomerBtn" style="margin-top:6px">Thêm</button>
+          </div>
+        </div>
+
+        <h3 style="margin-top:6px;font-size:14px">Ghi booking (phiên câu)</h3>
+
+        <div class="grid">
+          <div>
+            <label class="small">Khách</label>
+            <select id="bookingCustomer" aria-label="Chọn khách"></select>
+          </div>
+
+          <div>
+            <label class="small">Bắt đầu (ngày+giờ)</label>
+            <input type="datetime-local" id="bookingStart" />
+          </div>
+
+          <div>
+            <label class="small">Kết thúc (ngày+giờ)</label>
+            <input type="datetime-local" id="bookingEnd" />
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button id="addBookingBtn">Ghi</button>
+            <button id="cancelEditBookingBtn" class="btn-ghost" style="display:none">Huỷ</button>
+          </div>
+        </div>
+
+        <div class="small" style="margin-top:6px">
+          Lưu ý: "Bắt đầu" mặc định là hiện tại. "Kết thúc" có thể để trống và cập nhật sau khi kết thúc. Hỗ trợ qua đêm.
+        </div>
+
+        <div class="stat-row" id="stats" aria-hidden="false"></div>
+      </section>
+
+      <section class="card" aria-labelledby="list-title">
+        <h2 id="list-title" style="font-size:15px">Danh sách & Báo cáo</h2>
+
+        <div class="tabs" style="margin-bottom:8px">
+          <button data-tab="bookings" class="active">Phiên</button>
+          <button data-tab="customers">Khách</button>
+          <button data-tab="reports">Báo cáo</button>
+        </div>
+
+        <div id="tabContent" class="tab-content"></div>
+      </section>
+    </main>
+
+    <footer>
+      <small>Chạy cục bộ • Dữ liệu lưu trên trình duyệt (localStorage)</small>
+    </footer>
+  </div>
+
+<script>
+/* Adjusted single-file app: show duration as hh:mm in "Giờ" column.
+   - display: hh:mm (hours padded to 2 digits, minutes to 2 digits)
+   - internal numeric hours (decimal) still used for calculations and CSV
+*/
+
+const STORAGE_KEY = "hc_thunghieu_final_v1";
+
+let state = {
+  pond: { id: 'pond-default', name: 'Hồ Câu Trung Hiếu' },
+  pricePerHour: 15000,
+  customers: [],
+  bookings: []
+};
+
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try{ state = JSON.parse(raw); } catch(e){ console.error(e); }
+  } else {
+    state = {
+      pond: { id: 'pond-default', name: 'Hồ Câu Trung Hiếu' },
+      pricePerHour: 15000,
+      customers: [],
+      bookings: []
+    };
+    saveState();
+  }
+}
+
+function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function $(s){ return document.querySelector(s); }
+function $all(s){ return Array.from(document.querySelectorAll(s)); }
+function isNarrow(){ return (window.innerWidth || document.documentElement.clientWidth) <= 360; }
+
+/* New helper: format duration (from startISO and endISO) to "hh:mm" */
+function formatDurationHHMMFromISO(startISO, endISO){
+  if(!startISO || !endISO) return '—';
+  const start = new Date(startISO);
+  const end = new Date(endISO);
+  let diff = end - start;
+  if(diff < 0) return '—';
+  // Round to nearest minute
+  const totalMinutes = Math.round(diff / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const pad = n => String(n).padStart(2,'0');
+  return `${pad(hours)}:${pad(minutes)}`;
+}
+
+function init(){
+  loadState();
+  bindControls();
+  renderPrice();
+  renderCustomerSelector();
+  renderStats();
+  renderTab('bookings');
+  setBookingFormDefaults();
+
+  let lastNarrow = isNarrow();
+  window.addEventListener('resize', ()=> {
+    const nowNarrow = isNarrow();
+    if(nowNarrow !== lastNarrow){
+      lastNarrow = nowNarrow;
+      renderTab(getActiveTab());
+    }
+  });
+}
+
+function bindControls(){
+  $('#pricePerHour').addEventListener('change', (e)=>{
+    const v = parseFloat(e.target.value) || 0;
+    state.pricePerHour = Math.max(0, Math.round(v));
+    saveState();
+    renderStats();
+  });
+
+  $('#addCustomerBtn').addEventListener('click', ()=>{
+    const name = $('#customerName').value.trim();
+    const phone = $('#customerPhone').value.trim();
+    if(!name) return alert('Nhập tên khách');
+    state.customers.push({ id: genId(), name, phone });
+    $('#customerName').value=''; $('#customerPhone').value='';
+    saveState();
+    renderCustomerSelector();
+    renderTab(getActiveTab());
+  });
+
+  $('#addBookingBtn').addEventListener('click', onAddOrUpdateBooking);
+  $('#cancelEditBookingBtn').addEventListener('click', ()=>{ resetBookingForm(); });
+
+  document.querySelectorAll('.tabs').forEach(tabGroup=>{
+    tabGroup.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        tabGroup.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        renderTab(btn.dataset.tab);
+      });
+    });
+  });
+}
+
+/* Booking helpers */
+function setBookingFormDefaults(){
+  const now = new Date();
+  $('#bookingStart').value = localIsoInputValue(now);
+  $('#bookingEnd').value = '';
+}
+
+let editingBookingId = null;
+
+function onAddOrUpdateBooking(){
+  const custId = $('#bookingCustomer').value;
+  const startVal = $('#bookingStart').value;
+  const endVal = $('#bookingEnd').value;
+  if(!custId) return alert('Chọn khách');
+  if(!startVal) return alert('Chọn thời gian bắt đầu');
+  const start = new Date(startVal);
+  let end = null;
+  if(endVal) end = new Date(endVal);
+  if(end && end < start) return alert('Thời điểm kết thúc phải sau thời điểm bắt đầu (nếu qua đêm, chọn ngày kết thúc tiếp theo).');
+
+  let hours = 0;
+  if(end){
+    hours = Math.round(((end - start)/(1000*60*60))*100)/100;
+  }
+  const pricePerHour = Number(state.pricePerHour) || 0;
+  const amount = end ? Math.round(hours * pricePerHour) : 0;
+
+  if(editingBookingId){
+    const b = state.bookings.find(x=>x.id===editingBookingId);
+    if(!b) return;
+    b.custId = custId;
+    b.startISO = start.toISOString();
+    b.endISO = end ? end.toISOString() : null;
+    b.hours = hours;
+    b.pricePerHour = pricePerHour;
+    b.amount = amount;
+    saveState();
+    resetBookingForm();
+    renderTab('bookings');
+    renderStats();
+    return;
+  }
+
+  const booking = {
+    id: genId(),
+    custId,
+    startISO: start.toISOString(),
+    endISO: end ? end.toISOString() : null,
+    hours,
+    pricePerHour,
+    amount,
+    note: ''
+  };
+  state.bookings.push(booking);
+  saveState();
+  resetBookingForm();
+  renderTab('bookings');
+  renderStats();
+}
+
+function localIsoInputValue(date){
+  const pad = n => String(n).padStart(2,'0');
+  const y = date.getFullYear();
+  const m = pad(date.getMonth()+1);
+  const d = pad(date.getDate());
+  const hh = pad(date.getHours());
+  const mm = pad(date.getMinutes());
+  return `${y}-${m}-${d}T${hh}:${mm}`;
+}
+
+function resetBookingForm(){
+  editingBookingId = null;
+  $('#bookingCustomer').value = '';
+  setBookingFormDefaults();
+  $('#addBookingBtn').textContent = 'Ghi';
+  $('#cancelEditBookingBtn').style.display = 'none';
+}
+
+/* Render helpers */
+function renderPrice(){ $('#pricePerHour').value = state.pricePerHour; }
+function renderCustomerSelector(){
+  const sel = $('#bookingCustomer');
+  sel.innerHTML = '<option value="">-- Chọn khách --</option>';
+  state.customers.forEach(c=>{
+    const o = document.createElement('option'); o.value = c.id; o.textContent = `${c.name}${c.phone? ' • ' + c.phone : ''}`;
+    sel.appendChild(o);
+  });
+}
+function formatVnd(n){ return Number(n || 0).toLocaleString('vi-VN') + ' ₫'; }
+function custName(id){ const c = state.customers.find(x=>x.id===id); return c ? c.name : '—'; }
+function custPhone(id){ const c = state.customers.find(x=>x.id===id); return c ? c.phone || '' : ''; }
+
+function renderStats(){
+  const statEl = $('#stats');
+  const totalRevenue = state.bookings.reduce((s,b)=>s + (b.amount || 0), 0);
+  const sessions = state.bookings.length;
+  const ongoing = state.bookings.filter(b=>!b.endISO).length;
+  statEl.innerHTML = `
+    <div class="stat"><div class="small">Giá hiện tại</div><div style="font-weight:700;margin-top:6px">${formatVnd(state.pricePerHour)}/giờ</div></div>
+    <div class="stat"><div class="small">Tổng doanh thu</div><div style="font-weight:700;margin-top:6px">${formatVnd(totalRevenue)}</div></div>
+    <div class="stat"><div class="small">Số phiên</div><div style="font-weight:700;margin-top:6px">${sessions}</div></div>
+    <div class="stat"><div class="small">Đang câu</div><div style="font-weight:700;margin-top:6px">${ongoing}</div></div>
+  `;
+}
+
+function getActiveTab(){
+  const active = document.querySelector('.tabs button.active');
+  return active ? active.dataset.tab : 'bookings';
+}
+
+/* Render main tabs (bookings/customers/reports) using card view on narrow screens */
+function renderTab(tab){
+  const container = $('#tabContent');
+  if(tab === 'bookings'){
+    if(state.bookings.length === 0){
+      container.innerHTML = `<h3>Phiên câu (0)</h3><div class="small">Chưa có phiên nào</div>`;
+      return;
+    }
+    if(isNarrow()){
+      let html = `<h3>Phiên câu (${state.bookings.length})</h3><div id="bookingCards">`;
+      const rows = state.bookings.slice().sort((a,b)=> b.startISO.localeCompare(a.startISO));
+      rows.forEach(b=>{
+        const dur = formatDurationHHMMFromISO(b.startISO, b.endISO);
+        html += `<div class="booking-card" data-id="${b.id}">
+          <div class="booking-row"><div style="font-weight:700">${escapeHtml(custName(b.custId))}</div><div style="font-size:13px">${formatVnd(b.amount||0)}</div></div>
+          <div class="booking-meta">${formatLocal(b.startISO)} — ${b.endISO? formatLocal(b.endISO): '<em>Chưa</em>'}</div>
+          <div class="booking-meta">Giờ: ${dur}</div>
+          <div class="card-actions">
+            <button class="small-btn" data-action="edit" data-id="${b.id}">Sửa</button>
+            <button class="small-btn" data-action="end" data-id="${b.id}">${b.endISO? 'Cập nhật' : 'Kết thúc'}</button>
+            <button class="small-btn" data-action="delete" data-id="${b.id}">Xóa</button>
+          </div>
+        </div>`;
+      });
+      html += `</div>`;
+      container.innerHTML = html;
+      container.querySelectorAll('.small-btn').forEach(btn=>{
+        const id = btn.dataset.id;
+        btn.addEventListener('click', ()=> {
+          const a = btn.dataset.action;
+          if(a === 'edit') editBooking(id);
+          else if(a === 'end') endBookingNow(id);
+          else if(a === 'delete') deleteBooking(id);
+        });
+      });
+    } else {
+      let html = `<h3>Phiên câu (${state.bookings.length})</h3>`;
+      // Table with colgroup widths per request
+      html += '<div class="table-wrapper"><table><colgroup><col class="col-name"><col class="col-start"><col class="col-end"><col class="col-hours"><col class="col-amount"><col class="col-action"></colgroup><thead><tr><th>Khách</th><th>Bắt đầu</th><th>Kết thúc</th><th>Giờ</th><th>Tiền</th><th></th></tr></thead><tbody>';
+      const rows = state.bookings.slice().sort((a,b)=> b.startISO.localeCompare(a.startISO));
+      rows.forEach(b=>{
+        const dur = formatDurationHHMMFromISO(b.startISO, b.endISO);
+        html += `<tr>
+          <td>${escapeHtml(custName(b.custId))}${custPhone(b.custId)? '<div class="small">'+escapeHtml(custPhone(b.custId))+'</div>':''}</td>
+          <td>${formatLocal(b.startISO)}</td>
+          <td>${b.endISO ? formatLocal(b.endISO) : '<em class="small">Chưa</em>'}</td>
+          <td style="text-align:right">${dur}</td>
+          <td style="text-align:right">${formatVnd(b.amount || 0)}</td>
+          <td style="text-align:center">
+            <button class="btn-ghost" data-id="${b.id}" data-action="edit">Sửa</button>
+            <button class="btn-ghost" data-id="${b.id}" data-action="end">Cập nhật</button>
+            <button class="btn-ghost" data-id="${b.id}" data-action="delete">Xoá</button>
+          </td>
+        </tr>`;
+      });
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+      container.querySelectorAll('button[data-action]').forEach(btn=>{
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+        btn.addEventListener('click', ()=>{
+          if(action === 'edit') editBooking(id);
+          else if(action === 'end') endBookingNow(id);
+          else if(action === 'delete') deleteBooking(id);
+        });
+      });
+    }
+  } else if(tab === 'customers'){
+    if(state.customers.length === 0){
+      container.innerHTML = `<h3>Khách (0)</h3><div class="small">Chưa có khách</div>`;
+      return;
+    }
+    if(isNarrow()){
+      let html = `<h3>Khách (${state.customers.length})</h3><div id="custCards">`;
+      state.customers.forEach(c=>{
+        html += `<div class="booking-card" data-id="${c.id}"><div style="font-weight:700">${escapeHtml(c.name)}</div><div class="booking-meta">${escapeHtml(c.phone||'')}</div><div class="card-actions"><button class="small-btn" data-action="del" data-id="${c.id}">Xóa</button></div></div>`;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+      container.querySelectorAll('button[data-action="del"]').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const id = e.target.dataset.id;
+          if(confirm('Xác nhận xóa khách?')) {
+            state.customers = state.customers.filter(x=>x.id !== id);
+            saveState();
+            renderCustomerSelector();
+            renderTab('customers');
+          }
+        });
+      });
+    } else {
+      let html = `<h3>Khách (${state.customers.length})</h3>`;
+      html += '<div class="table-wrapper"><table><thead><tr><th>Tên</th><th>SĐT</th><th></th></tr></thead><tbody>';
+      state.customers.forEach(c=>{
+        html += `<tr><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.phone || '')}</td><td><button class="btn-ghost" data-id="${c.id}" data-action="del">Xóa</button></td></tr>`;
+      });
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+      container.querySelectorAll('button[data-action="del"]').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const id = e.target.dataset.id;
+          if(confirm('Xác nhận xóa khách?')) {
+            state.customers = state.customers.filter(x=>x.id !== id);
+            saveState();
+            renderCustomerSelector();
+            renderTab('customers');
+          }
+        });
+      });
+    }
+  } else if(tab === 'reports'){
+    let html = `<h3>Báo cáo</h3>
+      <div class="grid" style="margin-bottom:8px">
+        <div><label class="small">Khách</label><select id="reportCustomerSel"></select></div>
+        <div><label class="small">Từ</label><input type="date" id="reportStart"/></div>
+        <div><label class="small">Đến</label><input type="date" id="reportEnd"/></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><button id="genReportCust">Tạo</button><button id="exportReportCust" class="btn-ghost">Xuất CSV</button></div>
+      </div>
+
+      <div class="grid" style="margin-top:8px">
+        <div><label class="small">Chọn ngày</label><input type="date" id="reportDate"/></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><button id="genReportDate">Báo cáo ngày</button><button id="exportReportDate" class="btn-ghost">Xuất CSV</button></div>
+      </div>
+
+      <div id="reportResult" style="margin-top:10px"></div>`;
+    container.innerHTML = html;
+    renderReportSelectors();
+    $('#genReportCust').addEventListener('click', ()=>{ genReportByCustomer(); });
+    $('#exportReportCust').addEventListener('click', exportReportByCustomerCsv);
+    $('#genReportDate').addEventListener('click', ()=>{ genReportByDate(); });
+    $('#exportReportDate').addEventListener('click', exportReportByDateCsv);
+  }
+}
+
+/* Booking actions */
+function editBooking(id){
+  const b = state.bookings.find(x=>x.id===id);
+  if(!b) return;
+  editingBookingId = id;
+  $('#bookingCustomer').value = b.custId;
+  $('#bookingStart').value = isoToLocalInput(b.startISO);
+  $('#bookingEnd').value = b.endISO ? isoToLocalInput(b.endISO) : '';
+  $('#addBookingBtn').textContent = 'Cập nhật';
+  $('#cancelEditBookingBtn').style.display = 'inline-block';
+  document.querySelectorAll('.tabs button').forEach(bn=> bn.classList.toggle('active', bn.dataset.tab === 'bookings'));
+  renderTab('bookings');
+}
+
+function endBookingNow(id){
+  const b = state.bookings.find(x=>x.id===id);
+  if(!b) return;
+  const now = new Date();
+  const start = new Date(b.startISO);
+  if(now < start) return alert('Thời gian hiện tại nhỏ hơn thời gian bắt đầu.');
+  b.endISO = now.toISOString();
+  b.hours = Math.round(((now - start)/(1000*60*60))*100)/100;
+  b.pricePerHour = b.pricePerHour || state.pricePerHour;
+  b.amount = Math.round(b.hours * b.pricePerHour);
+  saveState();
+  renderTab('bookings');
+  renderStats();
+}
+
+function deleteBooking(id){
+  if(!confirm('Xác nhận xóa booking này?')) return;
+  state.bookings = state.bookings.filter(x=>x.id !== id);
+  saveState();
+  renderTab('bookings');
+  renderStats();
+}
+
+/* Reports functions (unchanged) */
+function renderReportSelectors(){
+  const sel = $('#reportCustomerSel');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Chọn khách --</option>';
+  state.customers.forEach(c=>{
+    const o = document.createElement('option'); o.value = c.id; o.textContent = `${c.name}${c.phone? ' • ' + c.phone : ''}`;
+    sel.appendChild(o);
+  });
+  $('#reportStart').value = '';
+  $('#reportEnd').value = '';
+  $('#reportDate').value = new Date().toISOString().slice(0,10);
+}
+
+function genReportByCustomer(){
+  const custId = $('#reportCustomerSel').value;
+  const start = $('#reportStart').value;
+  const end = $('#reportEnd').value;
+  if(!custId) return alert('Chọn khách');
+  const rows = state.bookings.filter(b=>{
+    if(b.custId !== custId) return false;
+    if(start && (b.startISO < start+'T00:00:00.000Z')) return false;
+    if(end && (b.startISO > end+'T23:59:59.999Z')) return false;
+    return true;
+  }).sort((a,b)=> a.startISO.localeCompare(b.startISO));
+  let total = rows.reduce((s,r)=> s + (r.amount || 0), 0);
+  let html = `<h4>Báo cáo: ${escapeHtml(custName(custId))}</h4><div class="small">Từ: ${start||'—'} — Đến: ${end||'—'}</div>`;
+  if(rows.length === 0) html += `<div class="small" style="margin-top:8px">Không có bản ghi</div>`;
+  else {
+    if(isNarrow()){
+      html += '<div style="margin-top:8px">';
+      rows.forEach(r=>{
+        const dur = formatDurationHHMMFromISO(r.startISO, r.endISO);
+        html += `<div class="booking-card"><div style="font-weight:700">${formatLocal(r.startISO)} — ${r.endISO? formatLocal(r.endISO): 'Chưa'}</div><div class="booking-meta">Giờ: ${dur} • ${formatVnd(r.amount||0)}</div></div>`;
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="table-wrapper"><table style="margin-top:8px"><colgroup><col class="col-start"><col class="col-end"><col class="col-hours"><col class="col-amount"></colgroup><thead><tr><th>Bắt đầu</th><th>Kết thúc</th><th>Giờ</th><th>Tiền</th></tr></thead><tbody>';
+      rows.forEach(r=>{
+        const dur = formatDurationHHMMFromISO(r.startISO, r.endISO);
+        html += `<tr><td>${formatLocal(r.startISO)}</td><td>${r.endISO? formatLocal(r.endISO):'Chưa'}</td><td style="text-align:right">${dur}</td><td style="text-align:right">${formatVnd(r.amount||0)}</td></tr>`;
+      });
+      html += '</tbody></table></div>';
+    }
+    html += `<div style="margin-top:8px;font-weight:700">Tổng: ${formatVnd(total)}</div>`;
+  }
+  $('#reportResult').innerHTML = html;
+  $('#reportResult')._last = { type: 'cust', custId, start, end, rows, total };
+}
+
+function genReportByDate(){
+  const date = $('#reportDate').value;
+  if(!date) return alert('Chọn ngày');
+  const bookings = state.bookings.filter(b=>{
+    const sDate = b.startISO.slice(0,10);
+    return sDate === date;
+  });
+  let total = bookings.reduce((s,b)=> s + (b.amount || 0), 0);
+  let html = `<h4>Báo cáo ngày: ${date}</h4>`;
+  if(bookings.length===0) html += `<div class="small" style="margin-top:8px">Không có bản ghi</div>`;
+  else {
+    if(isNarrow()){
+      html += '<div style="margin-top:8px">';
+      bookings.forEach(b=>{
+        const dur = formatDurationHHMMFromISO(b.startISO, b.endISO);
+        html += `<div class="booking-card"><div style="font-weight:700">${escapeHtml(custName(b.custId))} • ${formatVnd(b.amount||0)}</div><div class="booking-meta">${formatLocal(b.startISO)} — ${b.endISO? formatLocal(b.endISO):'Chưa'}</div><div class="booking-meta">Giờ: ${dur}</div></div>`;
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="table-wrapper"><table style="margin-top:8px"><thead><tr><th>Khách</th><th>Bắt đầu</th><th>Kết thúc</th><th>Giờ</th><th>Tiền</th></tr></thead><tbody>';
+      bookings.forEach(b=>{
+        const dur = formatDurationHHMMFromISO(b.startISO, b.endISO);
+        html += `<tr><td>${escapeHtml(custName(b.custId))}</td><td>${formatLocal(b.startISO)}</td><td>${b.endISO? formatLocal(b.endISO) : 'Chưa'}</td><td style="text-align:right">${dur}</td><td style="text-align:right">${formatVnd(b.amount||0)}</td></tr>`;
+      });
+      html += '</tbody></table></div>';
+    }
+    html += `<div style="margin-top:8px;font-weight:700">Tổng doanh thu: ${formatVnd(total)}</div>`;
+  }
+  $('#reportResult').innerHTML = html;
+  $('#reportResult')._last = { type:'date', date, bookings, total };
+}
+
+function exportReportByCustomerCsv(){
+  const meta = $('#reportResult')._last;
+  if(!meta || meta.type !== 'cust') return alert('Chưa có báo cáo khách để xuất');
+  const {rows, total, custId, start, end} = meta;
+  let txt = `Báo cáo khách,${custName(custId)}\nTừ,${start||''}\nĐến,${end||''}\n\nBắt đầu,Kết thúc,Giờ,Tiền\n`;
+  rows.forEach(r => { txt += `${r.startISO},${r.endISO||''},${r.hours||''},${r.amount||0}\n`; });
+  txt += `\nTổng,,,${total}\n`;
+  downloadText(txt, `report_customer_${custName(custId).replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`);
+}
+
+function exportReportByDateCsv(){
+  const meta = $('#reportResult')._last;
+  if(!meta || meta.type !== 'date') return alert('Chưa có báo cáo ngày để xuất');
+  const {bookings, date, total} = meta;
+  let txt = `Báo cáo ngày,${date}\n\nKhách,Bắt đầu,Kết thúc,Giờ,Tiền\n`;
+  bookings.forEach(b => { txt += `${custName(b.custId)},${b.startISO},${b.endISO||''},${b.hours||''},${b.amount||0}\n`; });
+  txt += `\nTổng,,,${total}\n`;
+  downloadText(txt, `report_date_${date}.csv`);
+}
+
+function downloadText(text, filename){
+  const blob = new Blob([text], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* Utilities */
+/* Format: HH:MM DD/MM/YYYY (hour before, date after) */
+function formatLocal(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,'0');
+  const hh = pad(d.getHours()), mm = pad(d.getMinutes());
+  const dd = pad(d.getDate()), mmth = pad(d.getMonth()+1), yyyy = d.getFullYear();
+  return `${hh}:${mm} ${dd}/${mmth}/${yyyy}`;
+}
+
+function isoToLocalInput(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  return localIsoInputValue(d);
+}
+
+function escapeHtml(s){ return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* Init app */
+window.addEventListener('load', ()=>{ init(); setBookingFormDefaults(); });
+</script>
+</body>
+</html>
