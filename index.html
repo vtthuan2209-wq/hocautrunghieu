@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Hồ câu Trung Hiếu — Quản lý doanh thu (360px)</title>
   <meta name="theme-color" content="#0b5ed7">
+
+  <!-- PWA / iOS Web App support -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+
   <style>
     :root{
       --bg:#f7f9fc;
@@ -15,11 +22,10 @@
       font-family: Inter, Roboto, system-ui, -apple-system, "Segoe UI", Arial;
     }
 
-    /* --- Reset / Box sizing --- */
+    /* Reset / Box sizing */
     *, *::before, *::after { box-sizing: border-box; }
     html, body { height:100%; width:100%; margin:0; padding:0; overflow-x:hidden; -webkit-text-size-adjust:100%; }
 
-    /* --- Page layout centered to a narrow app width (max 360px) --- */
     body{
       background:var(--bg);
       color:#111;
@@ -30,13 +36,8 @@
       padding:8px;
       font-size:14px;
     }
-    .app {
-      width:100%;
-      max-width:360px; /* target width */
-      min-width:280px;
-    }
+    .app { width:100%; max-width:360px; min-width:280px; }
 
-    /* --- Typography & spacing --- */
     header{margin-bottom:8px}
     h1{margin:0;font-size:18px}
     .subtitle{margin:0;color:var(--muted);font-size:12px}
@@ -45,9 +46,9 @@
     .card{background:var(--card);padding:10px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
     h2,h3{margin:0 0 8px 0;padding:0}
 
-    /* --- Forms & grid --- */
+    /* Forms & grid */
     .grid{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start}
-    .grid > *{flex:1 1 120px; min-width:0} /* allow children to shrink on narrow screens */
+    .grid > *{flex:1 1 120px; min-width:0}
     label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
 
     input, select, button, textarea {
@@ -57,7 +58,7 @@
       background:#fff;
       font-size:14px;
       line-height:1;
-      min-width:0; /* very important to allow flex shrink */
+      min-width:0;
       max-width:100%;
     }
     input[type="datetime-local"], input[type="date"], input[type="time"]{ min-width:0; }
@@ -76,35 +77,26 @@
 
     footer{margin-top:10px;color:var(--muted);font-size:12px;text-align:center}
 
-    /* --- Responsive table wrapper (scrollable) --- */
+    /* Table wrapper */
     .table-wrapper { width:100%; overflow:auto; -webkit-overflow-scrolling:touch; }
     table{width:100%;border-collapse:collapse;font-size:13px; table-layout:fixed;}
     th, td { padding:6px; text-align:left; border-bottom:1px solid #f0f0f0; vertical-align:middle; }
     th { font-weight:600; }
 
-    /* Use fixed layout + col widths, but allow wrapping inside cells */
     td, th { overflow-wrap: anywhere; white-space:normal; word-break:break-word; }
-
-    /* Reduce padding/font in table to help fit */
     .table-wrapper table th, .table-wrapper table td { padding:6px 6px; font-size:12px; }
 
-    /* Column widths:
-       - Khách: 60px
-       - Action: 50px
-       - Giờ column small, Tiền expanded, Bắt đầu/Kết thúc share rest
-    */
-    col.col-name { width: 50px; }
+    /* Columns */
+    col.col-name { width: 60px; }
     col.col-action { width: 50px; }
-    col.col-start { width: 40px; }
-    col.col-end   { width: 40px; }
-    col.col-hours { width: 40px; }
-    col.col-amount{ width: 80px; }
+    col.col-start { width: 22%; }
+    col.col-end   { width: 22%; }
+    col.col-hours { width: 8%; }
+    col.col-amount{ width: 28%; }
 
-    /* Buttons styling: smaller */
     .small-btn{padding:4px 6px;border-radius:6px;border:1px solid #e9eef6;background:transparent;color:var(--accent);font-size:12px;flex:0 0 auto}
     .btn-ghost{padding:4px 6px;font-size:12px}
 
-    /* Booking card (mobile) */
     .booking-card{
       border:1px solid #eef3fb;
       padding:8px;
@@ -119,8 +111,8 @@
 
     /* Booking form layout as requested:
        Line 1: Khách (select) full width
-       Line 2: Bắt đầu + Ghi (button) on same line
-       Line 3: Kết thúc (datetime) full width
+       Line 2: Bắt đầu (left) + Ghi (right)
+       Line 3: Kết thúc (full width)
     */
     .booking-form { display:flex; flex-direction:column; gap:8px; }
     .bf-row { display:flex; gap:8px; align-items:flex-end; }
@@ -128,27 +120,31 @@
     .bf-row .btn-wrap { width:110px; flex:0 0 110px; display:flex; justify-content:flex-end; }
     .visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); white-space: nowrap; }
 
-    @media (max-width:360px){
-      .bf-row { flex-direction: row; }
-      .bf-row .btn-wrap { width:100px; flex:0 0 100px; }
-      /* Make sure on very small screens the start and button still fit; otherwise button will wrap */
+    /* On iOS Safari: prevent auto-zoom by ensuring input font-size >= 16px */
+    @supports (-webkit-overflow-scrolling: touch) {
+      input, select, textarea, button {
+        font-size: 16px !important;
+      }
+      /* but keep labels smaller to preserve visual hierarchy */
+      label { font-size: 12px; }
+      .small { font-size:12px; }
+      .table-wrapper table th, .table-wrapper table td { font-size:12px; }
     }
 
-    /* Narrow adjustments */
     @media (max-width:360px){
       body{padding:6px}
       h1{font-size:17px}
       .card{padding:8px}
       .stat{font-size:12px;padding:8px}
       .grid{gap:6px}
-      input,select,button{font-size:13px;padding:7px}
+      input,select,button{padding:7px}
       .table-wrapper table th, .table-wrapper table td { padding:6px 6px; font-size:12px; }
       .booking-meta{font-size:12px}
       .small{font-size:11px}
-      .booking-row div:first-child { font-size:14px; }
+      .bf-row .btn-wrap { width:100px; flex:0 0 100px; }
     }
 
-    /* Safety: ensure no element forces page-level horizontal scroll */
+    /* Ensure no page-level horizontal scroll */
     *[style] { max-width:100%; box-sizing:border-box; }
   </style>
 </head>
@@ -161,7 +157,7 @@
 
     <main>
       <section class="card" aria-labelledby="cfg-title">
-        <h2 id="cfg-title" style="font-size:15px"></h2>
+        <h2 id="cfg-title" style="font-size:15px">Cài đặt & Thêm dữ liệu</h2>
 
         <div class="grid" style="margin-bottom:8px">
           <div>
@@ -213,6 +209,7 @@
         </form>
 
         <div class="small" style="margin-top:6px">
+          Lưu ý: "Bắt đầu" mặc định là hiện tại. "Kết thúc" có thể để trống và cập nhật sau khi kết thúc. Hỗ trợ qua đêm.
         </div>
 
         <div class="stat-row" id="stats" aria-hidden="false"></div>
@@ -237,8 +234,9 @@
   </div>
 
 <script>
-/* Adjusted single-file app: show duration as hh:mm in "Giờ" column.
-   Form layout changed per request; IDs unchanged so JS logic still works.
+/* Full app JS: state, rendering, handlers
+   - Keeps previous logic: load/save state, add/edit/delete bookings, reports, CSV export
+   - Formats duration as hh:mm for display; CSV still exports numeric hours
 */
 
 const STORAGE_KEY = "hc_thunghieu_final_v1";
@@ -271,14 +269,12 @@ function $(s){ return document.querySelector(s); }
 function $all(s){ return Array.from(document.querySelectorAll(s)); }
 function isNarrow(){ return (window.innerWidth || document.documentElement.clientWidth) <= 360; }
 
-/* New helper: format duration (from startISO and endISO) to "hh:mm" */
 function formatDurationHHMMFromISO(startISO, endISO){
   if(!startISO || !endISO) return '—';
   const start = new Date(startISO);
   const end = new Date(endISO);
   let diff = end - start;
   if(diff < 0) return '—';
-  // Round to nearest minute
   const totalMinutes = Math.round(diff / 60000);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
@@ -303,6 +299,13 @@ function init(){
       renderTab(getActiveTab());
     }
   });
+
+  // Best-effort attempt to hide mobile address bar on load (if not standalone)
+  setTimeout(()=>{ if(!isStandalone()) try{ window.scrollTo(0,1); }catch(e){} }, 300);
+}
+
+function isStandalone() {
+  return (window.navigator.standalone === true) || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
 }
 
 function bindControls(){
@@ -324,7 +327,6 @@ function bindControls(){
     renderTab(getActiveTab());
   });
 
-  // form submit handled by onAddOrUpdateBooking via form onsubmit
   $('#cancelEditBookingBtn').addEventListener('click', ()=>{ resetBookingForm(); });
 
   document.querySelectorAll('.tabs').forEach(tabGroup=>{
@@ -338,7 +340,6 @@ function bindControls(){
   });
 }
 
-/* Booking helpers */
 function setBookingFormDefaults(){
   const now = new Date();
   $('#bookingStart').value = localIsoInputValue(now);
@@ -356,7 +357,7 @@ function onAddOrUpdateBooking(){
   const start = new Date(startVal);
   let end = null;
   if(endVal) end = new Date(endVal);
-  if(end && end < start) return alert('Thời điểm kết thúc phải sau thời điểm bắt đầu (nếu qua đêm, chọn ngày kết thúc tiếp theo).');
+  if(end && end < start) return alert('Thời điểm kết thúc phải sau thời điểm bắt đầu.');
 
   let hours = 0;
   if(end){
@@ -416,7 +417,6 @@ function resetBookingForm(){
   $('#cancelEditBookingBtn').style.display = 'none';
 }
 
-/* Render helpers */
 function renderPrice(){ $('#pricePerHour').value = state.pricePerHour; }
 function renderCustomerSelector(){
   const sel = $('#bookingCustomer');
@@ -426,6 +426,7 @@ function renderCustomerSelector(){
     sel.appendChild(o);
   });
 }
+
 function formatVnd(n){ return Number(n || 0).toLocaleString('vi-VN') + ' ₫'; }
 function custName(id){ const c = state.customers.find(x=>x.id===id); return c ? c.name : '—'; }
 function custPhone(id){ const c = state.customers.find(x=>x.id===id); return c ? c.phone || '' : ''; }
@@ -448,7 +449,7 @@ function getActiveTab(){
   return active ? active.dataset.tab : 'bookings';
 }
 
-/* Render main tabs (bookings/customers/reports) using card view on narrow screens */
+/* Render tabs (bookings/customers/reports). Uses formatDurationHHMMFromISO for "Giờ" */
 function renderTab(tab){
   const container = $('#tabContent');
   if(tab === 'bookings'){
@@ -457,7 +458,8 @@ function renderTab(tab){
       return;
     }
     if(isNarrow()){
-      let html = `<h3>Phiên câu (${state.bookings.length})</h3><div id="bookingCards">`;
+      let html = `<h3>Phiên câu (${state.bookings.length})</h3>`;
+      html += '<div id="bookingCards">';
       const rows = state.bookings.slice().sort((a,b)=> b.startISO.localeCompare(a.startISO));
       rows.forEach(b=>{
         const dur = formatDurationHHMMFromISO(b.startISO, b.endISO);
@@ -472,7 +474,7 @@ function renderTab(tab){
           </div>
         </div>`;
       });
-      html += `</div>`;
+      html += '</div>';
       container.innerHTML = html;
       container.querySelectorAll('.small-btn').forEach(btn=>{
         const id = btn.dataset.id;
@@ -485,7 +487,6 @@ function renderTab(tab){
       });
     } else {
       let html = `<h3>Phiên câu (${state.bookings.length})</h3>`;
-      // Table with colgroup widths per request
       html += '<div class="table-wrapper"><table><colgroup><col class="col-name"><col class="col-start"><col class="col-end"><col class="col-hours"><col class="col-amount"><col class="col-action"></colgroup><thead><tr><th>Khách</th><th>Bắt đầu</th><th>Kết thúc</th><th>Giờ</th><th>Tiền</th><th></th></tr></thead><tbody>';
       const rows = state.bookings.slice().sort((a,b)=> b.startISO.localeCompare(a.startISO));
       rows.forEach(b=>{
@@ -582,7 +583,10 @@ function renderTab(tab){
   }
 }
 
-/* Booking actions */
+/* The rest of reports/export functions are preserved from earlier version.
+   For brevity in this block they remain functionally identical.
+   (If you need the full expanded export functions here as well, I can include them.) */
+
 function editBooking(id){
   const b = state.bookings.find(x=>x.id===id);
   if(!b) return;
@@ -619,7 +623,8 @@ function deleteBooking(id){
   renderStats();
 }
 
-/* Reports functions (unchanged) */
+/* Remaining helper functions for reports & CSV (kept identical to earlier) */
+
 function renderReportSelectors(){
   const sel = $('#reportCustomerSel');
   if(!sel) return;
@@ -633,9 +638,9 @@ function renderReportSelectors(){
   $('#reportDate').value = new Date().toISOString().slice(0,10);
 }
 
-/* ... rest unchanged (reports/export etc.) ... */
+/* Minimal CSV/export/render functions (kept short here) */
 
-function genReportByCustomer(){
+function genReportByCustomer(){ /* ... same as previous implementation ... */
   const custId = $('#reportCustomerSel').value;
   const start = $('#reportStart').value;
   const end = $('#reportEnd').value;
@@ -671,7 +676,7 @@ function genReportByCustomer(){
   $('#reportResult')._last = { type: 'cust', custId, start, end, rows, total };
 }
 
-function genReportByDate(){
+function genReportByDate(){ /* ... same as previous implementation ... */
   const date = $('#reportDate').value;
   if(!date) return alert('Chọn ngày');
   const bookings = state.bookings.filter(b=>{
@@ -703,7 +708,7 @@ function genReportByDate(){
   $('#reportResult')._last = { type:'date', date, bookings, total };
 }
 
-function exportReportByCustomerCsv(){
+function exportReportByCustomerCsv(){ /* simplified, same structure */ 
   const meta = $('#reportResult')._last;
   if(!meta || meta.type !== 'cust') return alert('Chưa có báo cáo khách để xuất');
   const {rows, total, custId, start, end} = meta;
@@ -713,7 +718,7 @@ function exportReportByCustomerCsv(){
   downloadText(txt, `report_customer_${custName(custId).replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`);
 }
 
-function exportReportByDateCsv(){
+function exportReportByDateCsv(){ 
   const meta = $('#reportResult')._last;
   if(!meta || meta.type !== 'date') return alert('Chưa có báo cáo ngày để xuất');
   const {bookings, date, total} = meta;
@@ -732,7 +737,6 @@ function downloadText(text, filename){
 }
 
 /* Utilities */
-/* Format: HH:MM DD/MM/YYYY (hour before, date after) */
 function formatLocal(iso){
   if(!iso) return '';
   const d = new Date(iso);
@@ -750,7 +754,6 @@ function isoToLocalInput(iso){
 
 function escapeHtml(s){ return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-/* Init app */
 window.addEventListener('load', ()=>{ init(); setBookingFormDefaults(); });
 </script>
 </body>
